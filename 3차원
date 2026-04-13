@@ -3,6 +3,7 @@
 
 using namespace std;
 
+// 3차원 벡터를 나타내는 클래스
 class Vec {
 public:
     double x, y, z;
@@ -10,14 +11,17 @@ public:
     Vec() : x(0), y(0), z(0) {}
     Vec(double x, double y, double z) : x(x), y(y), z(z) {}
 
+    // 표준 입력을 통해 좌표를 받는 함수
     void input() {
         cin >> x >> y >> z;
     }
 
+    // 벡터의 덧셈과 뺄셈 연산자 오버로딩
     Vec operator+(const Vec& v) const { return { x + v.x, y + v.y, z + v.z }; }
     Vec operator-(const Vec& v) const { return { x - v.x, y - v.y, z - v.z }; }
 
-    // 3차원 외적: 결과가 스칼라가 아닌 '벡터'가 나옵니다.
+    // 3차원 외적: 두 벡터에 수직인 새로운 벡터를 반환
+    // 벡터의 방향이 결정
     Vec cross(const Vec& v) const {
         return {
             y * v.z - z * v.y,
@@ -26,42 +30,49 @@ public:
         };
     }
 
-    // 내적 (Dot Product): 두 벡터의 방향 일치 여부 확인용
+    // 내적: 두 벡터 사이의 각도와 관계를 스칼라 값으로 반환
+    // 양수면 두 벡터가 같은 방향(예각), 음수면 반대 방향(둔각)
     double dot(const Vec& v) const {
         return x * v.x + y * v.y + z * v.z;
     }
 };
 
+// 삼각형 판별을 위한 클래스
 class Triangle {
 public:
     Vec A, B, C;
 
     Triangle(const Vec& A, const Vec& B, const Vec& C) : A(A), B(B), C(C) {}
 
+    // 점 P가 삼각형 내부에 있는지 판별하는 함수
     bool contain(const Vec& P) const {
+        // 1. 삼각형의 변 벡터 계산
         Vec AB = B - A;
         Vec BC = C - B;
         Vec CA = A - C;
 
+        // 2. 각 꼭짓점에서 점 P로 향하는 벡터 계산
         Vec AP = P - A;
         Vec BP = P - B;
         Vec CP = P - C;
 
-        // 1. 각 변에서의 외적 벡터를 구함
+        // 3. 각 변과 점 P 사이의 외적 계산
+        // 이 벡터들은 평면과 수직이며, P의 위치에 따라 위 혹은 아래를 향함
         Vec c1 = AB.cross(AP);
         Vec c2 = BC.cross(BP);
         Vec c3 = CA.cross(CP);
 
-        // 2. 3차원에서는 외적 결과가 벡터이므로, 
-        // 세 외적 벡터가 '같은 방향'을 보고 있는지 내적으로 확인합니다.
-        // 기준이 되는 평면 법선 벡터(Normal Vector)와 비교합니다.
+        // 4. 기준이 되는 삼각형의 법선 벡터
+        // 삼각형 ABC 자체가 시계 방향인지 반시계 방향인지에 따른 기준점 역할
         Vec triNormal = AB.cross(C - A);
 
+        // 5. 내적을 통해 세 외적 벡터가 기준 법선 벡터와 같은 방향인지 확인
+        // 만약 P가 내부에 있다면 d1, d2, d3는 모두 같은 부호를 가짐
         double d1 = c1.dot(triNormal);
         double d2 = c2.dot(triNormal);
         double d3 = c3.dot(triNormal);
 
-        // 세 내적 값의 부호가 모두 같으면 삼각형 내부에 존재
+        // 6. 모든 내적 값이 0 이상이거나(한쪽 방향), 모두 0 이하인 경우 내부로 판단
         return (d1 >= 0 && d2 >= 0 && d3 >= 0) ||
             (d1 <= 0 && d2 <= 0 && d3 <= 0);
     }
@@ -71,7 +82,6 @@ int main() {
     Vec pA, pB, pC, pTarget;
 
     cout << "삼각형의 세 꼭짓점 좌표를 입력하세요 (x1 y1 z1 x2 y2 z2 x3 y3 z3):" << endl;
-    // 삼각형의 세 점 입력
     pA.input();
     pB.input();
     pC.input();
@@ -79,15 +89,14 @@ int main() {
     Triangle tri(pA, pB, pC);
 
     cout << "판별할 점의 좌표를 입력하세요 (px py pz):" << endl;
-    // 판별할 점 입력
     pTarget.input();
 
-    // 결과 출력 (1: 포함, 0: 미포함)
+    // 결과 출력 (1: 삼각형 내부 또는 변 위, 0: 삼각형 외부)
     if (tri.contain(pTarget)) {
-        cout << 1 << endl;
+        cout << "결과: 1 (내부 포함)" << endl;
     }
     else {
-        cout << 0 << endl;
+        cout << "결과: 0 (외부)" << endl;
     }
 
     return 0;
