@@ -1,0 +1,94 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+class Vec {
+public:
+    double x, y, z;
+
+    Vec() : x(0), y(0), z(0) {}
+    Vec(double x, double y, double z) : x(x), y(y), z(z) {}
+
+    void input() {
+        cin >> x >> y >> z;
+    }
+
+    Vec operator+(const Vec& v) const { return { x + v.x, y + v.y, z + v.z }; }
+    Vec operator-(const Vec& v) const { return { x - v.x, y - v.y, z - v.z }; }
+
+    // 3차원 외적: 결과가 스칼라가 아닌 '벡터'가 나옵니다.
+    Vec cross(const Vec& v) const {
+        return {
+            y * v.z - z * v.y,
+            z * v.x - x * v.z,
+            x * v.y - y * v.x
+        };
+    }
+
+    // 내적 (Dot Product): 두 벡터의 방향 일치 여부 확인용
+    double dot(const Vec& v) const {
+        return x * v.x + y * v.y + z * v.z;
+    }
+};
+
+class Triangle {
+public:
+    Vec A, B, C;
+
+    Triangle(const Vec& A, const Vec& B, const Vec& C) : A(A), B(B), C(C) {}
+
+    bool contain(const Vec& P) const {
+        Vec AB = B - A;
+        Vec BC = C - B;
+        Vec CA = A - C;
+
+        Vec AP = P - A;
+        Vec BP = P - B;
+        Vec CP = P - C;
+
+        // 1. 각 변에서의 외적 벡터를 구함
+        Vec c1 = AB.cross(AP);
+        Vec c2 = BC.cross(BP);
+        Vec c3 = CA.cross(CP);
+
+        // 2. 3차원에서는 외적 결과가 벡터이므로, 
+        // 세 외적 벡터가 '같은 방향'을 보고 있는지 내적으로 확인합니다.
+        // 기준이 되는 평면 법선 벡터(Normal Vector)와 비교합니다.
+        Vec triNormal = AB.cross(C - A);
+
+        double d1 = c1.dot(triNormal);
+        double d2 = c2.dot(triNormal);
+        double d3 = c3.dot(triNormal);
+
+        // 세 내적 값의 부호가 모두 같으면 삼각형 내부에 존재
+        return (d1 >= 0 && d2 >= 0 && d3 >= 0) ||
+            (d1 <= 0 && d2 <= 0 && d3 <= 0);
+    }
+};
+
+int main() {
+    Vec pA, pB, pC, pTarget;
+
+    cout << "삼각형의 세 꼭짓점 좌표를 입력하세요 (x1 y1 z1 x2 y2 z2 x3 y3 z3):" << endl;
+    // 삼각형의 세 점 입력
+    pA.input();
+    pB.input();
+    pC.input();
+
+    Triangle tri(pA, pB, pC);
+
+    cout << "판별할 점의 좌표를 입력하세요 (px py pz):" << endl;
+    // 판별할 점 입력
+    pTarget.input();
+
+    // 결과 출력 (1: 포함, 0: 미포함)
+    if (tri.contain(pTarget)) {
+        cout << 1 << endl;
+    }
+    else {
+        cout << 0 << endl;
+    }
+
+    return 0;
+}
