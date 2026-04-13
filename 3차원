@@ -98,6 +98,5 @@ int main() {
     else {
         cout << "결과: 0 (외부)" << endl;
     }
-
     return 0;
 }
